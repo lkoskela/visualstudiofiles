@@ -6,7 +6,7 @@ import { parseVisualStudioProjectFile } from '../../src'
 describe('parseVisualStudioProjectFile', () => {
 
     describe('App.Core.csproj', () => {
-        const project = parseVisualStudioProjectFile(path.join(__dirname, '../samples/core/App.Core/App.Core.csproj'))
+        const project = parseVisualStudioProjectFile(path.join(__dirname, '../samples/VS2013/core/App.Core/App.Core.csproj'))
 
         it('doesn\'t throw', () => {
             expect(project).toBeDefined()
@@ -29,7 +29,7 @@ describe('parseVisualStudioProjectFile', () => {
     })
 
     describe('App.CloudService.csproj', () => {
-        const project = parseVisualStudioProjectFile(path.join(__dirname, '../samples/cloud-service/App.CloudService.csproj'))
+        const project = parseVisualStudioProjectFile(path.join(__dirname, '../samples/VS2013/cloud-service/App.CloudService.csproj'))
 
         it('doesn\'t throw', () => {
             expect(project).toBeDefined()

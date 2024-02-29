@@ -11,16 +11,13 @@ const extractLineMatch = (lines: string[], regex: RegExp): RegExpMatchArray|null
 }
 
 const parseSolutionFileHeader = (lines: string[]): VisualStudioSolutionHeader => {
-    const majorVersion = extractLineMatch(lines, /^# Visual Studio Version\s+(.+?)$/)?.[1] || 'unknown'
+    const majorVersion = extractLineMatch(lines, /^# Visual Studio \.NET\s+(.+?)$/)?.[1]
+                         || extractLineMatch(lines, /^# Visual Studio(?: Version)?\s+(.+?)$/)?.[1]
+                         || 'unknown'
     const fullVersion = extractLineMatch(lines, /^VisualStudioVersion\s*=\s*(.+?)$/)?.[1] || 'unknown'
     const minimumVersion = extractLineMatch(lines, /^MinimumVisualStudioVersion\s*=\s*(.+?)$/)?.[1] || 'unknown'
     const fileFormat = extractLineMatch(lines, /^Microsoft Visual Studio Solution File, Format Version\s*(.+?)$/)?.[1] || 'unknown'
-    return {
-        fileFormat,
-        majorVersion,
-        fullVersion,
-        minimumVersion,
-    }
+    return { fileFormat, majorVersion, fullVersion, minimumVersion }
 }
 
 const mapProjectType = (guid: string): string => {
@@ -77,7 +74,7 @@ export const parseVisualStudioSolutionFile = (pathOrContents: string): VisualStu
 
 export const parseVisualStudioProjectFile = (pathOrContents: string): VisualStudioProject => {
     const projectFilePath = isFile(pathOrContents) ? pathOrContents : ''
-    if (projectFilePath !== '' && !['.csproj', '.fsproj'].includes(extname(projectFilePath))) throw new Error(`Not a valid Visual Studio project file name: ${projectFilePath}`)
+    if (projectFilePath !== '' && !['.csproj', '.fsproj', '.vbproj'].includes(extname(projectFilePath))) throw new Error(`Not a valid Visual Studio project file name: ${projectFilePath}`)
     const content = fileContents(pathOrContents)
     return parseProjectFileContent(projectFilePath, content)
 }
