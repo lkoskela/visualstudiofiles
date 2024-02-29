@@ -1,35 +1,9 @@
-import { existsSync, readFileSync, statSync } from 'fs'
 import path, { dirname, basename, extname } from 'path'
 
-export const isFile = (filePath: string): boolean => existsSync(filePath) && statSync(filePath).isFile()
+import { VisualStudioProject, VisualStudioSolution, VisualStudioSolutionHeader } from './types'
+import { isFile, fileContents } from './utils'
 
-
-type VisualStudioProject = {
-    name: string,
-    path: string,
-    guid: string,
-    type: string,
-    dependencies: Array<{ name: string, version: string }>,
-}
-
-type VisualStudioSolutionHeader = {
-    fileFormat: string,
-    majorVersion: string,
-    fullVersion: string,
-    minimumVersion: string,
-}
-
-type VisualStudioSolution = VisualStudioSolutionHeader & {
-    path: string,
-    projects: VisualStudioProject[],
-}
-
-const fileContents = (pathOrContents: string): string => {
-    if (isFile(pathOrContents)) {
-        return readFileSync(pathOrContents, 'utf8').toString()
-    }
-    return pathOrContents
-}
+const projectTypes = require('./codegen/project-types.json')
 
 const extractLineMatch = (lines: string[], regex: RegExp): RegExpMatchArray|null => {
     const matches: Array<RegExpMatchArray|null> = lines.map(line => line.match(regex))
@@ -40,7 +14,7 @@ const parseSolutionFileHeader = (lines: string[]): VisualStudioSolutionHeader =>
     const majorVersion = extractLineMatch(lines, /^# Visual Studio Version\s+(.+?)$/)?.[1] || 'unknown'
     const fullVersion = extractLineMatch(lines, /^VisualStudioVersion\s*=\s*(.+?)$/)?.[1] || 'unknown'
     const minimumVersion = extractLineMatch(lines, /^MinimumVisualStudioVersion\s*=\s*(.+?)$/)?.[1] || 'unknown'
-    const fileFormat = extractLineMatch(lines, /^Microsoft Visual Studio Solution File, Format Version\s*=\s*(.+?)$/)?.[1] || 'unknown'
+    const fileFormat = extractLineMatch(lines, /^Microsoft Visual Studio Solution File, Format Version\s*(.+?)$/)?.[1] || 'unknown'
     return {
         fileFormat,
         majorVersion,
@@ -49,16 +23,26 @@ const parseSolutionFileHeader = (lines: string[]): VisualStudioSolutionHeader =>
     }
 }
 
+const mapProjectType = (guid: string): string => {
+    return projectTypes[guid] || guid
+}
+
 const parseSolutionFileBody = (solutionFilePath: string|undefined, content: string): VisualStudioProject[] => {
-    const extractProjects = (contents: string): Array<{ name: string, path: string }> => {
-        const matches = [...contents.matchAll(/^Project\("\{.+?\}"\) = "(.+?)", "(.+?)", "\{.+?\}"/mg)]
-        return matches.map(match => ({ name: match[1], path: match[2].replace(/\\/g, '/') }))
+    const extractProjects = (contents: string): Array<{ name: string, path: string, type: string, guid: string }> => {
+        const matches = [...contents.matchAll(/^Project\("\{(.+?)\}"\) = "(.+?)", "(.+?)", "\{(.+?)\}"/mg)]
+        return matches.map(match => ({ type: match[1], name: match[2], path: match[3].replace(/\\/g, '/'), guid: match[4] }))
     }
 
-    const refs = extractProjects(content).map(ref => ({ name: ref.name, path: solutionFilePath ? path.join(dirname(solutionFilePath), ref.path) : ref.path }))
+    const refs = extractProjects(content).map(ref => ({
+        ...ref,
+        path: solutionFilePath ? path.join(dirname(solutionFilePath), ref.path) : ref.path
+    }))
     const filteredRefs = refs.filter(ref => !ref.path.endsWith('.vdproj'))
-    const projects: VisualStudioProject[] = filteredRefs.map(ref => parseVisualStudioProjectFile(ref.path))
-    return projects
+    const projects: VisualStudioProject[] = filteredRefs.map(ref => {
+        const project = parseVisualStudioProjectFile(ref.path)
+        return { ...project, ...ref }
+    })
+    return projects.map(project => ({ ...project, type: mapProjectType(project.type) }))
 }
 
 const parseSolutionFileContent = (filePath: string, content: string): VisualStudioSolution => {
