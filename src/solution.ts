@@ -1,4 +1,4 @@
-import path, { dirname, basename, extname } from 'path'
+import path, { dirname, extname } from 'path'
 
 import { VisualStudioProject, VisualStudioSolution, VisualStudioSolutionHeader } from './types'
 import { isFile, fileContents } from './utils'
@@ -6,11 +6,17 @@ import { parseVisualStudioProjectFile, supportedProjectFileExtensions } from './
 
 const projectTypes = require('./codegen/project-types.json')
 
+type ProjectReference = { name: string, path: string, type: string, guid: string }
+
 const extractLineMatch = (lines: string[], regex: RegExp): RegExpMatchArray|null => {
     const matches: Array<RegExpMatchArray|null> = lines.map(line => line.match(regex))
     return matches.find(match => !!match) || null
 }
 
+/**
+ * See https://gist.github.com/DanAtkinson/3f863464a5dadd93b8e4dea6fe7b973a for a list of
+ * Visual Studio solution file header format between different Visual Studio versions.
+ */
 const parseSolutionFileHeader = (lines: string[]): VisualStudioSolutionHeader => {
     const majorVersion = extractLineMatch(lines, /^# Visual Studio \.NET\s+(.+?)$/)?.[1]
                          || extractLineMatch(lines, /^# Visual Studio(?: Version)?\s+(.+?)$/)?.[1]
@@ -24,8 +30,6 @@ const parseSolutionFileHeader = (lines: string[]): VisualStudioSolutionHeader =>
 const mapProjectType = (guid: string): string => {
     return projectTypes[guid] || guid
 }
-
-type ProjectReference = { name: string, path: string, type: string, guid: string }
 
 const parseSolutionFileBody = (solutionFilePath: string|undefined, content: string): VisualStudioProject[] => {
     const extractProjects = (contents: string): ProjectReference[] => {
@@ -45,12 +49,19 @@ const parseSolutionFileBody = (solutionFilePath: string|undefined, content: stri
     return projects.map(project => ({ ...project, type: mapProjectType(project.type) }))
 }
 
+const validateSolutionFile = (filePath: string, content: string): void => {
+    if (filePath !== '' && extname(filePath) !== '.sln') {
+        throw new Error(`Not a valid Visual Studio solution file name: ${filePath}`)
+    }
+    if (!content.match(/^Microsoft Visual Studio Solution File, Format Version/m)) {
+        throw new Error(`Not a valid Visual Studio solution file: ${filePath}`)
+    }
+}
+
 const parseSolutionFileContent = (filePath: string, content: string): VisualStudioSolution => {
     content = content.replace(/\r\n/g, '\n')
     const bodyStartIndex = content.match(/(.*?)^Project/m)?.index || 0
-    const globalStartIndex = content.match(/(.*?)^Global/m)?.index || 0
-    if (filePath !== '' && extname(filePath) !== '.sln') throw new Error(`Not a valid Visual Studio solution file name: ${filePath}`)
-    if (bodyStartIndex === 0 && globalStartIndex === 0) throw new Error(`Not a valid Visual Studio solution file: ${filePath}`)
+    validateSolutionFile(filePath, content)
     const headerSegment = content.slice(0, bodyStartIndex)
     const header = parseSolutionFileHeader(headerSegment.split('\n'))
     const bodySegment = content.slice(bodyStartIndex)
