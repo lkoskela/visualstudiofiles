@@ -14,9 +14,11 @@ const parseProjectFileContent = (filePath: string, content: string): VisualStudi
     }
 }
 
+export const supportedProjectFileExtensions = ['.csproj', '.fsproj', '.vbproj']
+
 export const parseVisualStudioProjectFile = (pathOrContents: string): VisualStudioProject => {
     const projectFilePath = isFile(pathOrContents) ? pathOrContents : ''
-    if (projectFilePath !== '' && !['.csproj', '.fsproj', '.vbproj'].includes(extname(projectFilePath))) throw new Error(`Not a valid Visual Studio project file name: ${projectFilePath}`)
+    if (projectFilePath !== '' && !supportedProjectFileExtensions.includes(extname(projectFilePath))) throw new Error(`Not a valid Visual Studio project file name: ${projectFilePath}`)
     const content = fileContents(pathOrContents)
     return parseProjectFileContent(projectFilePath, content)
 }

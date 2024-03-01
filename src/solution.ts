@@ -2,7 +2,7 @@ import path, { dirname, basename, extname } from 'path'
 
 import { VisualStudioProject, VisualStudioSolution, VisualStudioSolutionHeader } from './types'
 import { isFile, fileContents } from './utils'
-import { parseVisualStudioProjectFile } from './project'
+import { parseVisualStudioProjectFile, supportedProjectFileExtensions } from './project'
 
 const projectTypes = require('./codegen/project-types.json')
 
@@ -25,21 +25,23 @@ const mapProjectType = (guid: string): string => {
     return projectTypes[guid] || guid
 }
 
+type ProjectReference = { name: string, path: string, type: string, guid: string }
+
 const parseSolutionFileBody = (solutionFilePath: string|undefined, content: string): VisualStudioProject[] => {
-    const extractProjects = (contents: string): Array<{ name: string, path: string, type: string, guid: string }> => {
+    const extractProjects = (contents: string): ProjectReference[] => {
         const matches = [...contents.matchAll(/^Project\("\{(.+?)\}"\) = "(.+?)", "(.+?)", "\{(.+?)\}"/mg)]
         return matches.map(match => ({ type: match[1], name: match[2], path: match[3].replace(/\\/g, '/'), guid: match[4] }))
     }
-
-    const refs = extractProjects(content).map(ref => ({
-        ...ref,
-        path: solutionFilePath ? path.join(dirname(solutionFilePath), ref.path) : ref.path
-    }))
-    const filteredRefs = refs.filter(ref => !ref.path.endsWith('.vdproj'))
-    const projects: VisualStudioProject[] = filteredRefs.map(ref => {
-        const project = parseVisualStudioProjectFile(ref.path)
-        return { ...project, ...ref }
-    })
+    const resolveRelativePath = (solutionFilePath: string|undefined, ref: ProjectReference): ProjectReference => {
+        const resolvedPath = solutionFilePath ? path.join(dirname(solutionFilePath), ref.path) : ref.path
+        return { ...ref, path: resolvedPath }
+    }
+    const extractProjectReferences = (content: string): ProjectReference[] => {
+        return extractProjects(content).map(ref => resolveRelativePath(solutionFilePath, ref))
+    }
+    const refs = extractProjectReferences(content)
+    const filteredRefs = refs.filter(ref => supportedProjectFileExtensions.includes(extname(ref.path)))
+    const projects: VisualStudioProject[] = filteredRefs.map(ref => ({ ...parseVisualStudioProjectFile(ref.path), ...ref }))
     return projects.map(project => ({ ...project, type: mapProjectType(project.type) }))
 }
 
