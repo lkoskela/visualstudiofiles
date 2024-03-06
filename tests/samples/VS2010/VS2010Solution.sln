@@ -2,6 +2,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 10
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VS2010Project", "VS2010Project\VS2010Project.csproj", "{BA9EB972-C998-43AF-A697-653BE8147504}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VS2010CppProject", "VS2010CppProject\VS2010CppProject.vcxproj", "{BA9EB972-C998-43AF-A697-653BE8147505}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -53,13 +53,19 @@ describe('parseVisualStudioSolutionFile', () => {
             it('includes only valid "code" projects (not a .vdproj, for example)', () => {
                 expect(solution).toBeDefined()
                 expect(solution.projects).toBeDefined()
-                expect(solution.projects.map(p => p.name).sort()).toStrictEqual(['VS2010Project'])
+                expect(solution.projects.map(p => p.name).sort()).toStrictEqual(['VS2010CppProject', 'VS2010Project'])
             })
 
-            it('extracts project GUID and project type', () => {
+            it('extracts C# project GUID and project type', () => {
                 const coreProject = solution?.projects?.find(p => p.name === 'VS2010Project')
                 expect(coreProject?.type).toEqual('C#')
                 expect(coreProject?.guid).toEqual('BA9EB972-C998-43AF-A697-653BE8147504')
+            })
+
+            it('extracts C++ project GUID and project type', () => {
+                const coreProject = solution?.projects?.find(p => p.name === 'VS2010CppProject')
+                expect(coreProject?.type).toEqual('C++')
+                expect(coreProject?.guid).toEqual('BA9EB972-C998-43AF-A697-653BE8147505')
             })
         })
 

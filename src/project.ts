@@ -14,7 +14,7 @@ const parseProjectFileContent = (filePath: string, content: string): VisualStudi
     }
 }
 
-export const supportedProjectFileExtensions = ['.csproj', '.fsproj', '.vbproj']
+export const supportedProjectFileExtensions = ['.csproj', '.fsproj', '.vbproj', '.vcxproj']
 
 export const parseVisualStudioProjectFile = (pathOrContents: string): VisualStudioProject => {
     const projectFilePath = isFile(pathOrContents) ? pathOrContents : ''
