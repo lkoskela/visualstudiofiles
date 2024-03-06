@@ -14,6 +14,20 @@ describe('parseVisualStudioSolutionFile', () => {
         expect(() => parseVisualStudioSolutionFile(filePath)).toThrow(new Error(`Not a valid Visual Studio solution file name: ${filePath}`))
     })
 
+    describe('solution with a virtual project ("Solution Items")', () => {
+        const parse = () => parseVisualStudioSolutionFile(path.join(__dirname, '../samples/gstreamer-sharp/gstreamer-sharp.sln'))
+
+        it('does not choke on the reference to non-existent project', () => {
+            expect(parse).not.toThrow()
+        })
+
+        it('includes only regular "code" projects, not the virtual project', () => {
+            const solution = parse()
+            expect(solution).toBeDefined()
+            expect(solution.projects).toBeDefined()
+            expect(solution.projects.map(p => p.name).sort()).toStrictEqual(['gstreamer-sharp'])
+        })
+    })
 
     describe('file format version 12.00 (VS2013 and newer)', () => {
         const solution = parseVisualStudioSolutionFile(path.join(__dirname, '../samples/VS2013/VS2013Solution.sln'))
