@@ -3,6 +3,7 @@ export type VisualStudioProject = {
     path: string,
     guid: string,
     type: string,
+    sdks: string[],
     dependencies: Array<{ name: string, version: string }>,
 }
 

@@ -3,14 +3,26 @@ import { basename, extname } from 'path'
 import { VisualStudioProject } from './types'
 import { isFile, fileContents } from './utils'
 
+const extractProjectSdks = (content: string): string[] => {
+    return [...content.matchAll(/<Project(?:\s+[a-zA-Z0-9\-_]+=\".*?\")*\s+Sdk="(.+?)"(\s|>)/g)]
+        .flatMap(ref => ref[1].split(';'))
+        .sort()
+}
+
+const extractPackageRefs = (content: string): Array<{ name: string, version: string }> => {
+    return [...content.matchAll(/<PackageReference Include="(.+?)" Version="(.+?)"/g)]
+        .map(ref => ({ name: ref[1], version: ref[2] }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+}
+
 const parseProjectFileContent = (filePath: string, content: string): VisualStudioProject => {
-    const packageRefs = [...content.matchAll(/<PackageReference Include="(.+?)" Version="(.+?)"/g)]
     return {
         name: basename(filePath, extname(filePath)),
         path: filePath,
         type: '',
         guid: '',
-        dependencies: packageRefs.map(ref => ({ name: ref[1], version: ref[2] }))
+        sdks: extractProjectSdks(content),
+        dependencies: extractPackageRefs(content)
     }
 }
 
