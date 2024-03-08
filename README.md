@@ -1,4 +1,4 @@
-# vsparse
+# visualstudiofiles
 
 A TypeScript/JavaScript library for parsing Visual Studio solution and project files in Node.js.
 
@@ -10,7 +10,7 @@ import {
     VisualStudioProject,
     parseVisualStudioSolutionFile,
     parseVisualStudioProjectFile,
-} from 'vsparse'
+} from 'visualstudiofiles'
 
 // You can parse solution files from a file path:
 let solution1: VisualStudioSolution = parseVisualStudioSolutionFile('/path/to/TicTacToe.sln')

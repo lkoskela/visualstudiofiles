@@ -1,5 +1,5 @@
 {
-  "name": "vsparse",
+  "name": "visualstudiofiles",
   "version": "1.0.0",
   "description": "Parse key information out of Visual Studio solution (.sln) and project (.csproj, .fsproj, .vbproj) files",
   "devDependencies": {
