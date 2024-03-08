@@ -44,8 +44,7 @@
     "test": "npm run build && npx jest --verbose --silent=false",
     "build": "tsc && npm run codegen",
     "codegen": "npx ts-node scripts/codegen.ts",
-    "prepack": "scripts/clean_build_dir.sh && npm run build",
-    "prepublish": "scripts/clean_build_dir.sh && npm run build"
+    "prepublish": "rm -rf ./build && npm run build"
   },
   "repository": {
     "type": "git",
