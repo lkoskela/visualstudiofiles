@@ -48,7 +48,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lkoskela/vsparse.git"
+    "url": "git+https://github.com/lkoskela/visualstudiofiles.git"
   },
   "keywords": [
     "visual",
@@ -64,7 +64,7 @@
   "author": "Lasse Koskela",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lkoskela/vsparse/issues"
+    "url": "https://github.com/lkoskela/visualstudiofiles/issues"
   },
-  "homepage": "https://github.com/lkoskela/vsparse"
+  "homepage": "https://github.com/lkoskela/visualstudiofiles"
 }
