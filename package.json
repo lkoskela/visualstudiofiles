@@ -3,14 +3,14 @@
   "version": "1.0.4",
   "description": "Parse key information out of Visual Studio solution (.sln) and project (.csproj, .fsproj, .vbproj) files",
   "devDependencies": {
-    "@babel/preset-typescript": "^7.16.0",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.5",
+    "@babel/preset-typescript": "^7.26.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.9.0",
     "jest": "^29.4.0",
     "jest-extended": "^4.0.2",
-    "ts-jest": "^29.0.5",
+    "ts-jest": "^29.2.5",
     "ts-node": "^10.4.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.6.3"
   },
   "compilerOptions": {
     "module": "commonJs",
